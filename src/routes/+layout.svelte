@@ -5,7 +5,7 @@
 
     // Get user and children from layout server
     let { data, children } = $props();
-    let user = data.user;
+    let user = $derived(data.user);
 
     // Track mobile menu state
     let menuOpen = $state(false);
