@@ -24,7 +24,7 @@ export async function load({ cookies }) {
 
     // Fetch all pending reports with comment and reporter info
     const [reports] = await pool.query(`
-        SELECT r.*, c.content, u.username AS reporter, u2.username AS commenter
+        SELECT r.*, c.content, c.id AS comment_id, u.username AS reporter, u2.username AS commenter
         FROM reports r
         JOIN comments c ON r.comment_id = c.id
         JOIN users u ON r.reported_by = u.id
@@ -63,7 +63,25 @@ export const actions = {
         return { success: true };
     },
 
-    // Dismiss a report
+    // Delete a reported comment and mark report as reviewed
+    deleteComment: async ({ request, cookies }) => {
+        const user = await getUser(cookies);
+        if (!user || user.role !== 'admin') throw error(403, 'Access denied');
+
+        const formData = await request.formData();
+        const comment_id = formData.get('comment_id');
+        const report_id = formData.get('report_id');
+
+        // Delete comment from database
+        await pool.query('DELETE FROM comments WHERE id = ?', [comment_id]);
+
+        // Mark report as reviewed
+        await pool.query('UPDATE reports SET status = ? WHERE id = ?', ['reviewed', report_id]);
+
+        return { success: true };
+    },
+
+    // Dismiss a report without deleting comment
     dismissReport: async ({ request, cookies }) => {
         const user = await getUser(cookies);
         if (!user || user.role !== 'admin') throw error(403, 'Access denied');
@@ -74,7 +92,5 @@ export const actions = {
         // Mark report as dismissed
         await pool.query('UPDATE reports SET status = ? WHERE id = ?', ['dismissed', id]);
         return { success: true };
-    },
-    
+    }
 };
-
