@@ -74,5 +74,7 @@ export const actions = {
         // Mark report as dismissed
         await pool.query('UPDATE reports SET status = ? WHERE id = ?', ['dismissed', id]);
         return { success: true };
-    }
+    },
+    
 };
+

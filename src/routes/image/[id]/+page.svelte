@@ -25,9 +25,10 @@
         />
     </div>
 
-    <!-- Image info -->
+    <!-- Image info row -->
     <div class="flex items-center justify-between mb-4">
-        <!-- Author -->
+
+        <!-- Author info -->
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
                 {#if image.avatar_url}
@@ -60,7 +61,7 @@
     <div class="border-t border-gray-100 pt-8">
         <h2 class="text-base font-semibold text-gray-800 mb-4">Comments ({data.comments.length})</h2>
 
-        <!-- Comment form — only for logged in users -->
+        <!-- Comment form only for logged in users -->
         {#if data.user}
             <form method="POST" action="?/comment" class="flex gap-3 mb-6">
                 <input
@@ -75,7 +76,7 @@
                 </button>
             </form>
         {:else}
-            <!-- Prompt to login to comment -->
+            <!-- Prompt guest to login -->
             <p class="text-sm text-gray-400 mb-6">
                 <a href="/auth/login" class="text-black font-medium hover:underline">Sign in</a> to comment.
             </p>
@@ -88,6 +89,7 @@
             <div class="flex flex-col gap-4">
                 {#each data.comments as comment (comment.id)}
                     <div class="flex gap-3">
+
                         <!-- Commenter avatar -->
                         <div class="w-7 h-7 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center flex-shrink-0">
                             {#if comment.avatar_url}
@@ -96,11 +98,23 @@
                                 <span class="text-xs font-semibold text-gray-500">{comment.username[0].toUpperCase()}</span>
                             {/if}
                         </div>
-                        <div>
+
+                        <div class="flex-1">
                             <!-- Commenter name -->
                             <span class="text-sm font-medium text-gray-800">{comment.username}</span>
                             <!-- Comment text -->
                             <p class="text-sm text-gray-600">{comment.content}</p>
+
+                            <!-- Report button only for other users comments -->
+                            {#if data.user && data.user.id !== comment.user_id}
+                                <form method="POST" action="?/report" class="mt-1">
+                                    <input type="hidden" name="comment_id" value={comment.id}/>
+                                    <input type="hidden" name="reason" value="inappropriate"/>
+                                    <button type="submit" class="text-xs text-gray-300 hover:text-red-400 transition">
+                                        Report
+                                    </button>
+                                </form>
+                            {/if}
                         </div>
                     </div>
                 {/each}

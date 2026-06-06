@@ -63,7 +63,7 @@ export const actions = {
         return { success: true };
     },
 
-    // Upvote an image
+    // Upvote or remove vote from an image
     vote: async ({ cookies, params }) => {
         const user = await getUser(cookies);
         if (!user) return { error: 'Login required' };
@@ -83,6 +83,32 @@ export const actions = {
             await pool.query('INSERT INTO votes (image_id, user_id) VALUES (?, ?)', [params.id, user.id]);
             await pool.query('UPDATE images SET vote_count = vote_count + 1 WHERE id = ?', [params.id]);
         }
+
+        return { success: true };
+    },
+
+    // Report a comment as inappropriate
+    report: async ({ request, cookies }) => {
+        const user = await getUser(cookies);
+        if (!user) return { error: 'Login required' };
+
+        const formData = await request.formData();
+        const comment_id = formData.get('comment_id');
+        const reason = formData.get('reason');
+
+        // Check if user already reported this comment
+        const [existing] = await pool.query(
+            'SELECT id FROM reports WHERE comment_id = ? AND reported_by = ?',
+            [comment_id, user.id]
+        );
+
+        if (existing.length > 0) return { error: 'Already reported' };
+
+        // Insert report into database
+        await pool.query(
+            'INSERT INTO reports (comment_id, reported_by, reason) VALUES (?, ?, ?)',
+            [comment_id, user.id, reason ?? 'other']
+        );
 
         return { success: true };
     }
