@@ -26,12 +26,12 @@ export async function createSession(userId) {
     return sessionId;
 }
 
-// Validate session and return user if session is still active
+// Validate session and return user including avatar_url
 export async function validateSession(sessionId) {
     const [rows] = await pool.execute(
-        `SELECT u.id, u.username, u.email, u.role 
-         FROM sessions s 
-         JOIN users u ON s.user_id = u.id 
+        `SELECT u.id, u.username, u.email, u.role, u.avatar_url
+         FROM sessions s
+         JOIN users u ON s.user_id = u.id
          WHERE s.id = ? AND s.expires_at > NOW()`,
         [sessionId]
     );
@@ -44,7 +44,7 @@ export async function invalidateSession(sessionId) {
     await pool.execute('DELETE FROM sessions WHERE id = ?', [sessionId]);
 }
 
-// Get current user from cookie
+// Get current user from cookie including avatar_url
 export async function getUser(cookies) {
     const sessionId = cookies.get('session_id');
     if (!sessionId) return null;

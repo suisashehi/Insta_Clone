@@ -2,14 +2,23 @@
     // Get user and images from server
     let { data, form } = $props();
 
-    // Track selected file name for upload preview
+    // Track selected file for upload preview
     let preview = $state(null);
     let uploading = $state(false);
+
+    // Track avatar preview
+    let avatarPreview = $state(null);
 
     // Show image preview when file is selected
     function handleFile(e) {
         const file = e.target.files?.[0];
         if (file) preview = URL.createObjectURL(file);
+    }
+
+    // Show avatar preview when file is selected
+    function handleAvatar(e) {
+        const file = e.target.files?.[0];
+        if (file) avatarPreview = URL.createObjectURL(file);
     }
 
     // Set uploading state on form submit
@@ -25,11 +34,51 @@
     <h1 class="text-2xl font-semibold text-gray-900 mb-1" style="font-family: 'DM Serif Display', serif;">Dashboard</h1>
     <p class="text-sm text-gray-400 mb-8">Manage and upload your photos.</p>
 
+    <!-- Avatar update section -->
+    <div class="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
+        <h2 class="text-base font-semibold text-gray-800 mb-4">Profile photo</h2>
+
+        <!-- Avatar success message -->
+        {#if form?.avatarSuccess}
+            <div class="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-600">
+                Avatar updated successfully!
+            </div>
+        {/if}
+
+        <!-- Avatar update form -->
+        <form method="POST" action="?/updateAvatar" enctype="multipart/form-data" class="flex items-center gap-5">
+
+            <!-- Current or preview avatar -->
+            <div class="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center flex-shrink-0">
+                {#if avatarPreview}
+                    <img src={avatarPreview} alt="Preview" class="w-full h-full object-cover"/>
+                {:else if data.user.avatar_url}
+                    <img src={data.user.avatar_url} alt={data.user.username} class="w-full h-full object-cover"/>
+                {:else}
+                    <!-- First letter fallback -->
+                    <span class="text-xl font-semibold text-gray-400">{data.user.username[0].toUpperCase()}</span>
+                {/if}
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <!-- File picker label -->
+                <label class="cursor-pointer text-sm text-gray-600 hover:text-black transition underline">
+                    Choose new photo
+                    <input type="file" name="avatar" accept="image/*" onchange={handleAvatar} class="hidden"/>
+                </label>
+                <!-- Submit button -->
+                <button type="submit" class="text-sm bg-black text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition w-fit">
+                    Save avatar
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- Upload form card -->
     <div class="bg-white border border-gray-100 rounded-2xl p-6 mb-10">
         <h2 class="text-base font-semibold text-gray-800 mb-4">Upload new photo</h2>
 
-        <!-- Success message -->
+        <!-- Upload success message -->
         {#if form?.success}
             <div class="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-600">
                 Photo uploaded successfully!

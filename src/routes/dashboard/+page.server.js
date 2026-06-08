@@ -70,35 +70,34 @@ export const actions = {
 
         return { success: true };
     },
-    
-    // Toggle bookmark for an image
-bookmark: async ({ request, cookies }) => {
-    const user = await getUser(cookies);
-    if (!user) throw redirect(303, '/auth/login');
 
-    const formData = await request.formData();
-    const image_id = formData.get('image_id');
+    // Update user avatar photo
+    updateAvatar: async ({ request, cookies }) => {
+        const user = await getUser(cookies);
+        if (!user) throw redirect(303, '/auth/login');
 
-    // Check if already bookmarked
-    const [existing] = await pool.query(
-        'SELECT id FROM bookmarks WHERE image_id = ? AND user_id = ?',
-        [image_id, user.id]
-    );
+        const formData = await request.formData();
+        const avatar = formData.get('avatar');
 
-    if (existing.length > 0) {
-        // Remove bookmark
+        if (!avatar || avatar.size === 0) return { error: 'No file selected' };
+
+        // Delete old avatar from Vercel Blob if exists
+        if (user.avatar_url) {
+            await del(user.avatar_url, { token: BLOB_READ_WRITE_TOKEN });
+        }
+
+        // Upload new avatar to Vercel Blob
+        const blob = await put(`avatars/${user.username}-${Date.now()}`, avatar, {
+            access: 'public',
+            token: BLOB_READ_WRITE_TOKEN
+        });
+
+        // Update avatar url in database
         await pool.query(
-            'DELETE FROM bookmarks WHERE image_id = ? AND user_id = ?',
-            [image_id, user.id]
+            'UPDATE users SET avatar_url = ? WHERE id = ?',
+            [blob.url, user.id]
         );
-    } else {
-        // Add bookmark
-        await pool.query(
-            'INSERT INTO bookmarks (image_id, user_id) VALUES (?, ?)',
-            [image_id, user.id]
-        );
+
+        return { avatarSuccess: true };
     }
-
-    return { success: true };
-}
 };
