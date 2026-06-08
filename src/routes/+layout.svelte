@@ -36,22 +36,29 @@
             <!-- Desktop nav -->
             <nav class="hidden sm:flex items-center gap-6">
                 {#if user}
+                    <!-- Main navigation links -->
                     <a href="/" class="text-sm text-gray-500 hover:text-black transition">Home</a>
                     <a href="/dashboard" class="text-sm text-gray-500 hover:text-black transition">Dashboard</a>
+                    <!-- Saved/bookmarks link -->
+                    <a href="/dashboard/bookmarks" class="text-sm text-gray-500 hover:text-black transition">Saved</a>
                     <a href="/profile/{user.username}" class="text-sm text-gray-500 hover:text-black transition">Profile</a>
+
+                    <!-- Admin link only for admins -->
                     {#if user.role === 'admin'}
                         <a href="/admin" class="text-sm text-gray-500 hover:text-black transition">Admin</a>
                     {/if}
 
-                    <!-- Avatar + logout -->
+                    <!-- Avatar and logout -->
                     <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
                         <div class="w-8 h-8 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
                             {#if user.avatar_url}
                                 <img src={user.avatar_url} alt={user.username} class="w-full h-full object-cover"/>
                             {:else}
+                                <!-- First letter fallback -->
                                 <span class="text-xs font-semibold text-gray-500">{user.username[0].toUpperCase()}</span>
                             {/if}
                         </div>
+                        <!-- Logout form -->
                         <form method="POST" action="/auth/logout">
                             <button type="submit" class="text-sm text-gray-500 hover:text-black transition">
                                 Logout
@@ -59,6 +66,7 @@
                         </form>
                     </div>
                 {:else}
+                    <!-- Guest links -->
                     <a href="/auth/login" class="text-sm text-gray-500 hover:text-black transition">Sign in</a>
                     <a href="/auth/register" class="text-sm font-medium text-white bg-black px-4 py-2 rounded-xl hover:bg-gray-800 transition">
                         Register
@@ -78,12 +86,14 @@
             </button>
         </div>
 
-        <!-- Mobile menu -->
+        <!-- Mobile menu dropdown -->
         {#if menuOpen}
             <div class="sm:hidden border-t border-gray-100 px-6 py-4 flex flex-col gap-3">
                 {#if user}
                     <a href="/" class="text-sm text-gray-600">Home</a>
                     <a href="/dashboard" class="text-sm text-gray-600">Dashboard</a>
+                    <!-- Saved link in mobile menu -->
+                    <a href="/dashboard/bookmarks" class="text-sm text-gray-600">Saved</a>
                     <a href="/profile/{user.username}" class="text-sm text-gray-600">Profile</a>
                     {#if user.role === 'admin'}
                         <a href="/admin" class="text-sm text-gray-600">Admin</a>

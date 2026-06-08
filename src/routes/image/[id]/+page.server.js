@@ -1,4 +1,4 @@
-// Load image detail page with comments and vote status
+// Load image detail page with comments, vote and bookmark status
 import pool from '$lib/server/database';
 import { getUser } from '$lib/server/auth';
 import { error } from '@sveltejs/kit';
@@ -40,7 +40,17 @@ export async function load({ params, cookies }) {
         hasVoted = votes.length > 0;
     }
 
-    return { image: images[0], comments, user, hasVoted };
+    // Check if current user has bookmarked this image
+    let hasBookmarked = false;
+    if (user) {
+        const [bookmarks] = await pool.query(
+            'SELECT id FROM bookmarks WHERE image_id = ? AND user_id = ?',
+            [params.id, user.id]
+        );
+        hasBookmarked = bookmarks.length > 0;
+    }
+
+    return { image: images[0], comments, user, hasVoted, hasBookmarked };
 }
 
 export const actions = {
@@ -82,6 +92,34 @@ export const actions = {
             // Add new vote
             await pool.query('INSERT INTO votes (image_id, user_id) VALUES (?, ?)', [params.id, user.id]);
             await pool.query('UPDATE images SET vote_count = vote_count + 1 WHERE id = ?', [params.id]);
+        }
+
+        return { success: true };
+    },
+
+    // Toggle bookmark for this image
+    bookmark: async ({ cookies, params }) => {
+        const user = await getUser(cookies);
+        if (!user) return { error: 'Login required' };
+
+        // Check if already bookmarked
+        const [existing] = await pool.query(
+            'SELECT id FROM bookmarks WHERE image_id = ? AND user_id = ?',
+            [params.id, user.id]
+        );
+
+        if (existing.length > 0) {
+            // Remove bookmark
+            await pool.query(
+                'DELETE FROM bookmarks WHERE image_id = ? AND user_id = ?',
+                [params.id, user.id]
+            );
+        } else {
+            // Add bookmark
+            await pool.query(
+                'INSERT INTO bookmarks (image_id, user_id) VALUES (?, ?)',
+                [params.id, user.id]
+            );
         }
 
         return { success: true };

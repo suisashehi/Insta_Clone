@@ -69,5 +69,36 @@ export const actions = {
         await pool.query('DELETE FROM images WHERE id = ?', [id]);
 
         return { success: true };
+    },
+    
+    // Toggle bookmark for an image
+bookmark: async ({ request, cookies }) => {
+    const user = await getUser(cookies);
+    if (!user) throw redirect(303, '/auth/login');
+
+    const formData = await request.formData();
+    const image_id = formData.get('image_id');
+
+    // Check if already bookmarked
+    const [existing] = await pool.query(
+        'SELECT id FROM bookmarks WHERE image_id = ? AND user_id = ?',
+        [image_id, user.id]
+    );
+
+    if (existing.length > 0) {
+        // Remove bookmark
+        await pool.query(
+            'DELETE FROM bookmarks WHERE image_id = ? AND user_id = ?',
+            [image_id, user.id]
+        );
+    } else {
+        // Add bookmark
+        await pool.query(
+            'INSERT INTO bookmarks (image_id, user_id) VALUES (?, ?)',
+            [image_id, user.id]
+        );
     }
+
+    return { success: true };
+}
 };

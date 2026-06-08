@@ -1,5 +1,5 @@
 <script>
-    // Get image, comments, user and vote status from server
+    // Get image, comments, user, vote and bookmark status from server
     let { data, form } = $props();
     let image = data.image;
 
@@ -16,7 +16,7 @@
 <!-- Detail page wrapper -->
 <div class="max-w-3xl mx-auto px-6 py-10">
 
-    <!-- Image -->
+    <!-- Image with CSS filter applied -->
     <div class="rounded-2xl overflow-hidden bg-gray-50 mb-6">
         <img
             src={image.image_url}
@@ -42,14 +42,28 @@
             </a>
         </div>
 
-        <!-- Vote button -->
-        <form method="POST" action="?/vote">
-            <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-xl border transition
-                {data.hasVoted ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}">
-                <span>♥</span>
-                <span class="text-sm font-medium">{image.vote_count}</span>
-            </button>
-        </form>
+        <!-- Action buttons: vote and bookmark -->
+        <div class="flex items-center gap-2">
+
+            <!-- Vote button -->
+            <form method="POST" action="?/vote">
+                <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-xl border transition
+                    {data.hasVoted ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}">
+                    <span>♥</span>
+                    <span class="text-sm font-medium">{image.vote_count}</span>
+                </button>
+            </form>
+
+            <!-- Bookmark button only for logged in users -->
+            {#if data.user}
+                <form method="POST" action="?/bookmark">
+                    <button type="submit" class="px-4 py-2 rounded-xl border transition
+                        {data.hasBookmarked ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}">
+                        🔖
+                    </button>
+                </form>
+            {/if}
+        </div>
     </div>
 
     <!-- Description -->
