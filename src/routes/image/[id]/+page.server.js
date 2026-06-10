@@ -149,5 +149,21 @@ export const actions = {
         );
 
         return { success: true };
-    }
+    },
+    // Delete own comment from image
+deleteComment: async ({ request, cookies }) => {
+    const user = await getUser(cookies);
+    if (!user) return { error: 'Login required' };
+
+    const formData = await request.formData();
+    const comment_id = formData.get('comment_id');
+
+    // Only delete if comment belongs to current user
+    await pool.query(
+        'DELETE FROM comments WHERE id = ? AND user_id = ?',
+        [comment_id, user.id]
+    );
+
+    return { success: true };
+}
 };

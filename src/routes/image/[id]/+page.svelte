@@ -17,7 +17,7 @@
 <div class="max-w-3xl mx-auto px-6 py-10">
 
     <!-- Image with CSS filter applied -->
-    <div class="rounded-2xl overflow-hidden bg-gray-50 mb-6">
+    <div class="rounded-2xl overflow-hidden bg-gray-50 dark:bg-zinc-900 mb-6">
         <img
             src={image.image_url}
             alt={image.description ?? 'Photo'}
@@ -30,14 +30,14 @@
 
         <!-- Author info -->
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center">
                 {#if image.avatar_url}
                     <img src={image.avatar_url} alt={image.username} class="w-full h-full object-cover"/>
                 {:else}
                     <span class="text-xs font-semibold text-gray-500">{image.username[0].toUpperCase()}</span>
                 {/if}
             </div>
-            <a href="/profile/{image.username}" class="text-sm font-medium text-gray-800 hover:underline">
+            <a href="/profile/{image.username}" class="text-sm font-medium text-gray-800 dark:text-white hover:underline">
                 {image.username}
             </a>
         </div>
@@ -48,7 +48,7 @@
             <!-- Vote button -->
             <form method="POST" action="?/vote">
                 <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-xl border transition
-                    {data.hasVoted ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}">
+                    {data.hasVoted ? 'bg-black text-white border-black' : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-700 hover:border-black'}">
                     <span>♥</span>
                     <span class="text-sm font-medium">{image.vote_count}</span>
                 </button>
@@ -58,7 +58,7 @@
             {#if data.user}
                 <form method="POST" action="?/bookmark">
                     <button type="submit" class="px-4 py-2 rounded-xl border transition
-                        {data.hasBookmarked ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}">
+                        {data.hasBookmarked ? 'bg-black text-white border-black' : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-700 hover:border-black'}">
                         🔖
                     </button>
                 </form>
@@ -68,12 +68,12 @@
 
     <!-- Description -->
     {#if image.description}
-        <p class="text-gray-700 mb-8">{image.description}</p>
+        <p class="text-gray-700 dark:text-zinc-300 mb-8">{image.description}</p>
     {/if}
 
     <!-- Comments section -->
-    <div class="border-t border-gray-100 pt-8">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">Comments ({data.comments.length})</h2>
+    <div class="border-t border-gray-100 dark:border-zinc-800 pt-8">
+        <h2 class="text-base font-semibold text-gray-800 dark:text-white mb-4">Comments ({data.comments.length})</h2>
 
         <!-- Comment form only for logged in users -->
         {#if data.user}
@@ -82,7 +82,7 @@
                     type="text" name="content"
                     placeholder="Write a comment..."
                     required
-                    class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition"
+                    class="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:border-black transition"
                 />
                 <button type="submit"
                     class="px-4 py-2.5 bg-black text-white text-sm rounded-xl hover:bg-gray-800 transition">
@@ -105,7 +105,7 @@
                     <div class="flex gap-3">
 
                         <!-- Commenter avatar -->
-                        <div class="w-7 h-7 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center flex-shrink-0">
                             {#if comment.avatar_url}
                                 <img src={comment.avatar_url} alt={comment.username} class="w-full h-full object-cover"/>
                             {:else}
@@ -115,20 +115,32 @@
 
                         <div class="flex-1">
                             <!-- Commenter name -->
-                            <span class="text-sm font-medium text-gray-800">{comment.username}</span>
+                            <span class="text-sm font-medium text-gray-800 dark:text-white">{comment.username}</span>
                             <!-- Comment text -->
-                            <p class="text-sm text-gray-600">{comment.content}</p>
+                            <p class="text-sm text-gray-600 dark:text-zinc-400">{comment.content}</p>
 
-                            <!-- Report button only for other users comments -->
-                            {#if data.user && data.user.id !== comment.user_id}
-                                <form method="POST" action="?/report" class="mt-1">
-                                    <input type="hidden" name="comment_id" value={comment.id}/>
-                                    <input type="hidden" name="reason" value="inappropriate"/>
-                                    <button type="submit" class="text-xs text-gray-300 hover:text-red-400 transition">
-                                        Report
-                                    </button>
-                                </form>
-                            {/if}
+                            <div class="flex items-center gap-3 mt-1">
+                                <!-- Delete button only for own comments -->
+                                {#if data.user && data.user.id === comment.user_id}
+                                    <form method="POST" action="?/deleteComment">
+                                        <input type="hidden" name="comment_id" value={comment.id}/>
+                                        <button type="submit" class="text-xs text-red-400 hover:text-red-500 transition">
+                                            Delete
+                                        </button>
+                                    </form>
+                                {/if}
+
+                                <!-- Report button only for other users comments -->
+                                {#if data.user && data.user.id !== comment.user_id}
+                                    <form method="POST" action="?/report">
+                                        <input type="hidden" name="comment_id" value={comment.id}/>
+                                        <input type="hidden" name="reason" value="inappropriate"/>
+                                        <button type="submit" class="text-xs text-gray-300 hover:text-red-400 transition">
+                                            Report
+                                        </button>
+                                    </form>
+                                {/if}
+                            </div>
                         </div>
                     </div>
                 {/each}
