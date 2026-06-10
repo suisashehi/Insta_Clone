@@ -179,21 +179,33 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {#each data.images as image (image.id)}
                 <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+
+                    <!-- Image thumbnail -->
                     <div class="aspect-square overflow-hidden bg-gray-50 dark:bg-zinc-800">
                         <img src={image.image_url} alt={image.description ?? 'Photo'} class="w-full h-full object-cover"/>
                     </div>
+
                     <div class="p-4">
                         {#if image.description}
                             <p class="text-sm text-gray-600 dark:text-zinc-400 mb-3 line-clamp-2">{image.description}</p>
                         {/if}
-                        <!-- Delete form -->
-                        <form method="POST" action="?/delete">
-                            <input type="hidden" name="id" value={image.id}/>
-                            <button type="submit"
-                                class="w-full text-sm text-red-500 hover:text-red-600 border border-red-100 hover:border-red-200 hover:bg-red-50 py-2 rounded-xl transition">
-                                Delete
-                            </button>
-                        </form>
+
+                        <!-- Edit and delete buttons -->
+                        <div class="flex gap-2">
+                            <!-- Edit button links to edit page -->
+                            <a href="/dashboard/edit/{image.id}"
+                                class="flex-1 text-center text-sm text-gray-600 dark:text-zinc-400 border border-gray-200 dark:border-zinc-700 hover:border-black py-2 rounded-xl transition">
+                                Edit
+                            </a>
+                            <!-- Delete form -->
+                            <form method="POST" action="?/delete" class="flex-1">
+                                <input type="hidden" name="id" value={image.id}/>
+                                <button type="submit"
+                                    class="w-full text-sm text-red-500 hover:text-red-600 border border-red-100 hover:border-red-200 hover:bg-red-50 py-2 rounded-xl transition">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             {/each}
