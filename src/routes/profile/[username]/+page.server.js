@@ -1,4 +1,4 @@
-// Load user profile page with their images and block status
+// Load user profile page with images, comments and block status
 import pool from '$lib/server/database';
 import { getUser } from '$lib/server/auth';
 import { error } from '@sveltejs/kit';
@@ -24,6 +24,15 @@ export async function load({ params, cookies }) {
         [profileUser.id]
     );
 
+    // Get all comments by this user with image info
+    const [comments] = await pool.query(`
+        SELECT c.*, i.image_url, i.id AS image_id
+        FROM comments c
+        JOIN images i ON c.image_id = i.id
+        WHERE c.user_id = ?
+        ORDER BY c.created_at DESC
+    `, [profileUser.id]);
+
     // Check if current user has blocked this profile
     let isBlocked = false;
     if (user) {
@@ -34,7 +43,7 @@ export async function load({ params, cookies }) {
         isBlocked = blocks.length > 0;
     }
 
-    return { profileUser, images, user, isBlocked };
+    return { profileUser, images, comments, user, isBlocked };
 }
 
 export const actions = {
